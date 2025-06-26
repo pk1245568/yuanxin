@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>考勤点配置</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    
+    body {
+      background-color: #f5f7fa;
+      color: #333;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 4px;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    
+    /* 搜索区域 */
+    .search-area {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .search-item {
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
+      margin-bottom: 10px;
+    }
+    
+    .search-label {
+      margin-right: 10px;
+      color: #606266;
+    }
+    
+    .search-input {
+      width: 200px;
+      padding: 8px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .search-select {
+      width: 200px;
+      padding: 8px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23606266' d='M6 8.825L1.175 4 2.238 2.938 6 6.7 9.763 2.937 10.825 4z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-color: #fff;
+    }
+    
+    .btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .btn-primary {
+      background-color: #409eff;
+      color: #fff;
+    }
+    
+    .btn-primary:hover {
+      background-color: #66b1ff;
+    }
+    
+    .btn-success {
+      background-color: #67c23a;
+      color: #fff;
+      margin-left: 10px;
+    }
+    
+    .btn-success:hover {
+      background-color: #85ce61;
+    }
+    
+    /* 表格样式 */
+    .table-container {
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    thead {
+      background-color: #f5f7fa;
+    }
+    
+    th {
+      padding: 12px 8px;
+      text-align: left;
+      font-weight: 500;
+      color: #606266;
+      border-bottom: 1px solid #ebeef5;
+    }
+    
+    td {
+      padding: 12px 8px;
+      border-bottom: 1px solid #ebeef5;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+    
+    tr:hover {
+      background-color: #f5f7fa;
+    }
+    
+    /* 操作按钮 */
+    .action-btn {
+      padding: 6px 10px;
+      background-color: #fff;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-right: 5px;
+      cursor: pointer;
+      color: #606266;
+    }
+    
+    .delete-btn {
+      color: #f56c6c;
+      border-color: #fbc4c4;
+    }
+    
+    .delete-btn:hover {
+      background-color: #fef0f0;
+    }
+    
+    .edit-btn {
+      color: #409eff;
+      border-color: #c6e2ff;
+    }
+    
+    .edit-btn:hover {
+      background-color: #ecf5ff;
+    }
+    
+    .bind-btn {
+      color: #67c23a;
+      border-color: #c2e7b0;
+    }
+    
+    .bind-btn:hover {
+      background-color: #f0f9eb;
+    }
+    
+    /* 分页 */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      color: #606266;
+    }
+    
+    .page-info {
+      font-size: 13px;
+    }
+    
+    .page-size-select {
+      padding: 5px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      margin-left: 5px;
+    }
+    
+    .page-btns {
+      display: flex;
+    }
+    
+    .page-btn {
+      margin: 0 5px;
+      padding: 6px 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #fff;
+      min-width: 30px;
+      text-align: center;
+    }
+    
+    .page-btn.active {
+      background-color: #409eff;
+      color: #fff;
+      border-color: #409eff;
+    }
+    
+    .page-btn:hover:not(.active) {
+      color: #409eff;
+    }
+    
+    .page-jump {
+      display: flex;
+      align-items: center;
+      margin-left: 15px;
+    }
+    
+    .page-jump input {
+      width: 50px;
+      padding: 5px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      margin: 0 5px;
+      text-align: center;
+    }
+    
+    /* 动态表单字段 */
+    .dynamic-fields {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px dashed #dcdfe6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 搜索区域 -->
+    <div class="search-area">
+      <div class="search-item">
+        <span class="search-label">关键字：</span>
+        <input type="text" class="search-input" placeholder="请输入关键字">
+      </div>
+      <div class="search-item">
+        <span class="search-label">打卡方式：</span>
+        <select class="search-select">
+          <option value="">请选择</option>
+          <option value="1">电子围栏</option>
+          <option value="2">拍照打卡</option>
+          <option value="3">门禁打卡</option>
+        </select>
+      </div>
+      <button class="btn btn-primary">查询</button>
+      <button class="btn btn-success">新增</button>
+    </div>
+    
+    <!-- 表格区域 -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>序号</th>
+            <th>名称</th>
+            <th>打卡方式</th>
+            <th>设备来源</th>
+            <th>设备名称</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>测试</td>
+            <td>电子围栏</td>
+            <td></td>
+            <td></td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>5</td>
+            <td>电子围栏</td>
+            <td></td>
+            <td></td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>2222</td>
+            <td>拍照打卡</td>
+            <td></td>
+            <td></td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>11111111111</td>
+            <td>拍照打卡</td>
+            <td></td>
+            <td></td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>矿口政务中心</td>
+            <td>电子围栏</td>
+            <td></td>
+            <td></td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>矿口打卡</td>
+            <td>电子围栏</td>
+            <td></td>
+            <td></td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td>拍照打卡测试</td>
+            <td>拍照打卡</td>
+            <td>海康威视</td>
+            <td>拍照打卡测试</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td>机场2工区项目经理部</td>
+            <td>门禁打卡</td>
+            <td>海康威视</td>
+            <td>一号门禁</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>9</td>
+            <td>机场2工区钢筋加工厂</td>
+            <td>门禁打卡</td>
+            <td>大华</td>
+            <td>二号门禁</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td>武黄1线地办/黄黄3线地办</td>
+            <td>门禁打卡</td>
+            <td>海康威视</td>
+            <td>三号门禁</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>11</td>
+            <td>机场3工区生活区</td>
+            <td>门禁打卡</td>
+            <td>大华</td>
+            <td>四号门禁</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>12</td>
+            <td>机场2工区工地试验室</td>
+            <td>门禁打卡</td>
+            <td>海康威视</td>
+            <td>五号门禁</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>13</td>
+            <td>机场4工区钢筋加工厂</td>
+            <td>门禁打卡</td>
+            <td>大华</td>
+            <td>六号门禁</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>14</td>
+            <td>机场驻地办</td>
+            <td>门禁打卡</td>
+            <td>海康威视</td>
+            <td>七号门禁</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>15</td>
+            <td>机场1工区生活区</td>
+            <td>门禁打卡</td>
+            <td>大华</td>
+            <td>八号门禁</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>16</td>
+            <td>机场6工区钢筋加工厂</td>
+            <td>门禁打卡</td>
+            <td>海康威视</td>
+            <td>九号门禁</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>17</td>
+            <td>机场6工区生活区</td>
+            <td>门禁打卡</td>
+            <td>大华</td>
+            <td>十号门禁</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>18</td>
+            <td>武黄2标项目经理部</td>
+            <td>门禁打卡</td>
+            <td>海康威视</td>
+            <td>十一号门禁</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>19</td>
+            <td>武黄2标工地试验室</td>
+            <td>门禁打卡</td>
+            <td>大华</td>
+            <td>十二号门禁</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+          <tr>
+            <td>20</td>
+            <td>武黄2标1工区生活区</td>
+            <td>门禁打卡</td>
+            <td>海康威视</td>
+            <td>十三号门禁</td>
+            <td>
+              <button class="action-btn delete-btn">删除</button>
+              <button class="action-btn edit-btn">编辑</button>
+              <button class="action-btn bind-btn">绑定用户</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- 分页区域 -->
+    <div class="pagination">
+      <div class="page-info">
+        共 60 条
+        <select class="page-size-select">
+          <option value="20">20条/页</option>
+          <option value="10">10条/页</option>
+          <option value="30">30条/页</option>
+          <option value="50">50条/页</option>
+        </select>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <div class="page-btns">
+          <button class="page-btn">&lt;</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">&gt;</button>
+        </div>
+        <div class="page-jump">
+          前往
+          <input type="text" value="1">
+          页
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新增/编辑弹窗 (隐藏状态) -->
+  <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: white; width: 500px; border-radius: 4px; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);">
+      <div style="padding: 20px; border-bottom: 1px solid #ebeef5; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-size: 18px; color: #303133;">新增考勤点</h3>
+        <button style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+      </div>
+      <div style="padding: 20px;">
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #606266;">名称</label>
+          <input type="text" id="pointName" style="width: 100%; padding: 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+        </div>
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #606266;">打卡方式</label>
+          <select id="checkType" onchange="showDynamicFields()" style="width: 100%; padding: 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+            <option value="1">电子围栏</option>
+            <option value="2">拍照打卡</option>
+            <option value="3">门禁打卡</option>
+          </select>
+        </div>
+        
+        <!-- 门禁打卡特有字段 -->
+        <div id="doorAccessFields" class="dynamic-fields" style="display: none;">
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #606266;">门禁名称</label>
+            <input type="text" id="doorName" style="width: 100%; padding: 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+          </div>
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #606266;">设备来源</label>
+            <select id="deviceSource" style="width: 100%; padding: 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+              <option value="">请选择</option>
+              <option value="1">海康威视</option>
+              <option value="2">大华</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #606266;">设备名称</label>
+            <input type="text" id="deviceName" style="width: 100%; padding: 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+          </div>
+        </div>
+        
+        <!-- 拍照打卡特有字段 -->
+        <div id="photoFields" class="dynamic-fields" style="display: none;">
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #606266;">设备来源</label>
+            <select id="photoDeviceSource" style="width: 100%; padding: 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+              <option value="">请选择</option>
+              <option value="1">海康威视</option>
+              <option value="2">大华</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #606266;">设备名称</label>
+            <input type="text" id="photoDeviceName" style="width: 100%; padding: 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+          </div>
+        </div>
+        
+        <!-- 电子围栏特有字段 -->
+        <div id="fenceFields" class="dynamic-fields" style="display: none;">
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #606266;">围栏半径(米)</label>
+            <input type="number" id="fenceRadius" style="width: 100%; padding: 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;" value="100">
+          </div>
+        </div>
+      </div>
+      <div style="padding: 10px 20px 20px; text-align: right;">
+        <button style="padding: 8px 20px; background-color: #fff; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; margin-right: 10px; cursor: pointer;">取消</button>
+        <button style="padding: 8px 20px; background-color: #409eff; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 绑定用户弹窗 -->
+  <div id="bindModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: white; width: 800px; border-radius: 4px; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);">
+      <div style="padding: 20px; border-bottom: 1px solid #ebeef5; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-size: 18px; color: #303133;">绑定用户</h3>
+        <button style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+      </div>
+      
+      <div style="display: flex; height: 500px;">
+        <!-- 左侧部门树 -->
+        <div style="width: 300px; border-right: 1px solid #ebeef5; padding: 15px; overflow-y: auto;">
+          <div style="margin-bottom: 15px;">
+            <input type="text" placeholder="输入关键字进行过滤" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+          </div>
+          
+          <div style="font-size: 14px; color: #606266;">
+            <div style="padding: 8px 0; cursor: pointer; display: flex; align-items: center;">
+              <span style="margin-right: 5px;">▶</span>鄂州机场高速公路二期
+            </div>
+            <div style="padding: 8px 0 8px 20px; cursor: pointer;">领导</div>
+            <div style="padding: 8px 0 8px 20px; cursor: pointer;">计划合同部</div>
+            <div style="padding: 8px 0 8px 20px; cursor: pointer;">质量部</div>
+            <div style="padding: 8px 0 8px 20px; cursor: pointer;">安全部</div>
+            <div style="padding: 8px 0 8px 20px; cursor: pointer;">财务部</div>
+            <div style="padding: 8px 0 8px 20px; cursor: pointer;">技术部</div>
+            <div style="padding: 8px 0 8px 20px; cursor: pointer;">征迁协调部</div>
+            <div style="padding: 8px 0 8px 20px; cursor: pointer;">项目分部</div>
+            <div style="padding: 8px 0 8px 20px; cursor: pointer;">设计单位</div>
+            <div style="padding: 8px 0 8px 20px; cursor: pointer;">综合办公室</div>
+            <div style="padding: 8px 0 8px 20px; cursor: pointer;">监督管理</div>
+            <div style="padding: 8px 0 8px 20px; cursor: pointer;">中心试验室</div>
+          </div>
+        </div>
+        
+        <!-- 右侧用户列表 -->
+        <div style="flex: 1; padding: 15px; display: flex; flex-direction: column;">
+          <!-- Tab切换 -->
+          <div style="margin-bottom: 15px; border-bottom: 1px solid #e4e7ed;">
+            <div style="display: flex;">
+              <div id="allUsersTab" class="bind-tab active" onclick="switchBindTab('allUsers')" style="padding: 10px 15px; cursor: pointer; font-size: 14px; border-bottom: 2px solid #409eff; color: #409eff;">
+                全部用户
+              </div>
+              <div id="bindedUsersTab" class="bind-tab" onclick="switchBindTab('bindedUsers')" style="padding: 10px 15px; cursor: pointer; font-size: 14px; color: #606266;">
+                已绑定用户
+              </div>
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; width: 100%;">
+              <!-- 添加搜索框 -->
+              <input type="text" placeholder="请输入用户姓名" style="flex: 1; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; margin-right: 10px;">
+              <button style="padding: 8px 15px; background-color: #409eff; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; margin-right: 10px;">查询</button>
+              <span style="font-size: 14px; color: #606266;">已选择 0 项 清空</span>
+            </div>
+          </div>
+          
+          <!-- 全部用户表格 -->
+          <div id="allUsersTable" class="user-table" style="flex: 1; overflow-y: auto; border: 1px solid #ebeef5; border-radius: 4px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              <thead>
+                <tr style="background-color: #f5f7fa;">
+                  <th style="padding: 12px 8px; text-align: left; font-weight: 500; color: #606266; border-bottom: 1px solid #ebeef5;">
+                    <input type="checkbox"> 
+                  </th>
+                  <th style="padding: 12px 8px; text-align: left; font-weight: 500; color: #606266; border-bottom: 1px solid #ebeef5;">用户名称</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;"><input type="checkbox"></td>
+                  <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;">张三</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;"><input type="checkbox"></td>
+                  <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;">李四</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;"><input type="checkbox"></td>
+                  <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;">王五</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- 已绑定用户表格 -->
+          <div id="bindedUsersTable" class="user-table" style="display: none; flex: 1; overflow-y: auto; border: 1px solid #ebeef5; border-radius: 4px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              <thead>
+                <tr style="background-color: #f5f7fa;">
+                  <th style="padding: 12px 8px; text-align: left; font-weight: 500; color: #606266; border-bottom: 1px solid #ebeef5;">
+                    <input type="checkbox"> 
+                  </th>
+                  <th style="padding: 12px 8px; text-align: left; font-weight: 500; color: #606266; border-bottom: 1px solid #ebeef5;">用户名称</th>
+                  <th style="padding: 12px 8px; text-align: center; font-weight: 500; color: #606266; border-bottom: 1px solid #ebeef5;">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;"><input type="checkbox"></td>
+                  <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;">赵六</td>
+                  <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; text-align: center;">
+                    <button class="action-btn delete-btn" onclick="removeBindedUser(this)">移除</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;"><input type="checkbox"></td>
+                  <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;">钱七</td>
+                  <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; text-align: center;">
+                    <button class="action-btn delete-btn" onclick="removeBindedUser(this)">移除</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- 分页 -->
+          <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #606266;">
+            <div>
+              共 0 条
+              <select style="padding: 5px; border: 1px solid #dcdfe6; border-radius: 4px; margin-left: 5px;">
+                <option value="50">50条/页</option>
+                <option value="10">10条/页</option>
+                <option value="20">20条/页</option>
+                <option value="30">30条/页</option>
+              </select>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <div style="display: flex;">
+                <button style="margin: 0 5px; padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; cursor: pointer; background-color: #fff; min-width: 30px; text-align: center;">&lt;</button>
+                <button style="margin: 0 5px; padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; cursor: pointer; background-color: #409eff; color: #fff; border-color: #409eff; min-width: 30px; text-align: center;">1</button>
+                <button style="margin: 0 5px; padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; cursor: pointer; background-color: #fff; min-width: 30px; text-align: center;">&gt;</button>
+              </div>
+              <div style="display: flex; align-items: center; margin-left: 15px;">
+                前往
+                <input type="text" value="1" style="width: 50px; padding: 5px; border: 1px solid #dcdfe6; border-radius: 4px; margin: 0 5px; text-align: center;">
+                页
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="padding: 10px 20px 20px; text-align: right; border-top: 1px solid #ebeef5;">
+        <button style="padding: 8px 20px; background-color: #fff; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; margin-right: 10px; cursor: pointer;">取消</button>
+        <button style="padding: 8px 20px; background-color: #409eff; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 根据打卡方式显示不同的字段
+    function showDynamicFields() {
+      const checkType = document.getElementById('checkType').value;
+      
+      // 隐藏所有动态字段区域
+      document.getElementById('doorAccessFields').style.display = 'none';
+      document.getElementById('fenceFields').style.display = 'none';
+      
+      // 根据选择的打卡方式显示对应的字段
+      if (checkType === '3') { // 门禁打卡
+        document.getElementById('doorAccessFields').style.display = 'block';
+      } else if (checkType === '1') { // 电子围栏
+        document.getElementById('fenceFields').style.display = 'block';
+      }
+      // 拍照打卡不需要显示额外字段，只保留名称字段
+    }
+
+    // 修改页面加载时的初始化代码
+    document.addEventListener('DOMContentLoaded', function() {
+      // 新增按钮点击事件
+      document.querySelector('.btn-success').addEventListener('click', function() {
+        document.getElementById('editModal').style.display = 'flex';
+        // 初始化动态字段显示
+        showDynamicFields();
+      });
+      
+      // 编辑按钮点击事件
+      document.querySelectorAll('.edit-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          document.getElementById('editModal').style.display = 'flex';
+          // 初始化动态字段显示
+          showDynamicFields();
+        });
+      });
+      
+      // 绑定用户按钮点击事件
+      document.querySelectorAll('.bind-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          document.getElementById('bindModal').style.display = 'flex';
+        });
+      });
+      
+      // 关闭弹窗
+      document.querySelectorAll('#editModal button, #bindModal button').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          document.getElementById('editModal').style.display = 'none';
+          document.getElementById('bindModal').style.display = 'none';
+        });
+      });
+      
+      // 确保select元素有onchange事件
+      document.getElementById('checkType').addEventListener('change', showDynamicFields);
+    });
+
+    // 切换绑定用户Tab
+    function switchBindTab(tabName) {
+      // 重置所有tab和表格
+      document.querySelectorAll('.bind-tab').forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.borderBottom = 'none';
+        tab.style.color = '#606266';
+      });
+      
+      document.querySelectorAll('.user-table').forEach(table => {
+        table.style.display = 'none';
+      });
+      
+      // 激活选中的tab
+      if (tabName === 'allUsers') {
+        document.getElementById('allUsersTab').classList.add('active');
+        document.getElementById('allUsersTab').style.borderBottom = '2px solid #409eff';
+        document.getElementById('allUsersTab').style.color = '#409eff';
+        document.getElementById('allUsersTable').style.display = 'block';
+      } else {
+        document.getElementById('bindedUsersTab').classList.add('active');
+        document.getElementById('bindedUsersTab').style.borderBottom = '2px solid #409eff';
+        document.getElementById('bindedUsersTab').style.color = '#409eff';
+        document.getElementById('bindedUsersTable').style.display = 'block';
+      }
+    }
+
+    // 移除已绑定用户
+    function removeBindedUser(btn) {
+      if (confirm('确定要移除该用户吗？')) {
+        btn.closest('tr').remove();
+      }
+    }
+  </script>
+</body>
+</html>
