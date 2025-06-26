@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>考勤规则管理系统</title>
+  <style>
+    /* 基础样式 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    
+    body {
+      background-color: #f5f7fa;
+      color: #333;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 4px;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    
+    /* 顶部操作区 */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #ebeef5;
+    }
+    
+    .add-btn {
+      background-color: #409eff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .add-btn:hover {
+      background-color: #66b1ff;
+    }
+    
+    .add-btn i {
+      margin-right: 5px;
+      font-size: 16px;
+    }
+    
+    .tabs {
+      display: flex;
+    }
+    
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 14px;
+      border-bottom: 2px solid transparent;
+      margin-right: 10px;
+    }
+    
+    .tab.active {
+      color: #409eff;
+      border-bottom-color: #409eff;
+    }
+    
+    /* 表格样式 */
+    .table-container {
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    th {
+      background-color: #f5f7fa;
+      padding: 12px 8px;
+      text-align: left;
+      font-weight: 500;
+      color: #606266;
+      border-bottom: 1px solid #ebeef5;
+    }
+    
+    td {
+      padding: 12px 8px;
+      border-bottom: 1px solid #ebeef5;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+    
+    /* 开关组件 */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+    }
+    
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #dcdfe6;
+      transition: .4s;
+      border-radius: 20px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: #409eff;
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    
+    /* 操作按钮 */
+    .action-btn {
+      padding: 6px 10px;
+      background-color: #fff;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-right: 5px;
+      cursor: pointer;
+      color: #606266;
+    }
+    
+    .edit-btn {
+      color: #409eff;
+      border-color: #c6e2ff;
+    }
+    
+    .edit-btn:hover {
+      background-color: #ecf5ff;
+    }
+    
+    .delete-btn {
+      color: #f56c6c;
+      border-color: #fbc4c4;
+    }
+    
+    .delete-btn:hover {
+      background-color: #fef0f0;
+    }
+    
+    .bind-btn {
+      color: #67c23a;
+      border-color: #c2e7b0;
+    }
+    
+    .bind-btn:hover {
+      background-color: #f0f9eb;
+    }
+    
+    .view-btn {
+      color: #909399;
+      border-color: #e9e9eb;
+    }
+    
+    .view-btn:hover {
+      background-color: #f4f4f5;
+    }
+    
+    /* 分页 */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+    
+    .page-btns {
+      display: flex;
+    }
+    
+    .page-btn {
+      margin: 0 5px;
+      padding: 6px 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #fff;
+    }
+    
+    .page-btn.active {
+      background-color: #409eff;
+      color: #fff;
+      border-color: #409eff;
+    }
+    
+    /* 弹窗 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background-color: #fff;
+      width: 500px;
+      border-radius: 4px;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #ebeef5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      color: #303133;
+      font-weight: 500;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #909399;
+    }
+    
+    .modal-body {
+      padding: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #606266;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .date-range {
+      display: flex;
+      align-items: center;
+    }
+    
+    .date-range .form-input {
+      width: calc(50% - 10px);
+    }
+    
+    .date-range span {
+      margin: 0 10px;
+    }
+    
+    .form-switch {
+      display: flex;
+      align-items: center;
+    }
+    
+    .form-switch label {
+      margin-left: 10px;
+    }
+    
+    .rule-config {
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 10px;
+      min-height: 150px;
+    }
+    
+    .modal-footer {
+      padding: 10px 20px 20px;
+      text-align: right;
+    }
+    
+    .cancel-btn {
+      padding: 8px 20px;
+      background-color: #fff;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-right: 10px;
+      cursor: pointer;
+      color: #606266;
+    }
+    
+    .save-btn {
+      padding: 8px 20px;
+      background-color: #409eff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    .save-btn:hover {
+      background-color: #66b1ff;
+    }
+    
+    /* 确认删除弹窗 */
+    .confirm-modal .modal-content {
+      width: 400px;
+    }
+    
+    .confirm-body {
+      padding: 30px 20px;
+      text-align: center;
+    }
+    
+    .confirm-icon {
+      font-size: 48px;
+      color: #f56c6c;
+      margin-bottom: 10px;
+    }
+    
+    .confirm-text {
+      font-size: 16px;
+      color: #606266;
+    }
+    
+    /* 打卡时间段列表 */
+    .time-periods {
+      margin-top: 15px;
+    }
+    
+    .time-period {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .time-period .form-input {
+      width: 30%;
+      margin-right: 10px;
+    }
+    
+    .remove-btn {
+      background: none;
+      border: none;
+      color: #f56c6c;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    
+    .add-time-btn {
+      display: inline-flex;
+      align-items: center;
+      color: #409eff;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    
+    .add-time-btn i {
+      margin-right: 5px;
+    }
+    
+    /* 表格内容区域 */
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 顶部操作区 -->
+    <div class="header">
+      <button class="add-btn" id="addRuleBtn">
+        <i>+</i> 新增规则
+      </button>
+      <div class="tabs">
+        <div class="tab active" data-type="attendance">出勤规则</div>
+        <div class="tab" data-type="field">外勤规则</div>
+        <div class="tab" data-type="overtime">加班规则</div>
+        <div class="tab" data-type="absence">旷工规则</div>
+      </div>
+    </div>
+    
+    <!-- 中部列表区 - 出勤规则 -->
+    <div class="tab-content active" id="attendanceContent">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>序号</th>
+              <th>规则名称</th>
+              <th>开始时间</th>
+              <th>结束时间</th>
+              <th>规则状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>标准工作日</td>
+              <td>2023-01-01</td>
+              <td>2023-12-31</td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <button class="action-btn edit-btn" onclick="editRule(1, 'attendance')">编辑</button>
+                <button class="action-btn delete-btn" onclick="showDeleteConfirm(1)">删除</button>
+                <button class="action-btn bind-btn" onclick="bindEmployee(1)">绑定人员</button>
+                <button class="action-btn view-btn" onclick="viewBindedEmployee(1)">查看绑定人员</button>
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>弹性工作制</td>
+              <td>2023-01-01</td>
+              <td>2023-12-31</td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <button class="action-btn edit-btn" onclick="editRule(2, 'attendance')">编辑</button>
+                <button class="action-btn delete-btn" onclick="showDeleteConfirm(2)">删除</button>
+                <button class="action-btn bind-btn" onclick="bindEmployee(2)">绑定人员</button>
+                <button class="action-btn view-btn" onclick="viewBindedEmployee(2)">查看绑定人员</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 出勤规则分页区域 -->
+      <div class="pagination">
+        <div class="page-btns">
+          <button class="page-btn">&lt;&lt;</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">&gt;&gt;</button>
+        </div>
+        <div class="total">共10条记录</div>
+      </div>
+    </div>
+    
+    <!-- 中部列表区 - 外勤规则 -->
+    <div class="tab-content" id="fieldContent">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>序号</th>
+              <th>规则名称</th>
+              <th>开始时间</th>
+              <th>结束时间</th>
+              <th>规则状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>客户拜访规则</td>
+              <td>2023-01-01</td>
+              <td>2023-12-31</td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <button class="action-btn edit-btn" onclick="editRule(1, 'field')">编辑</button>
+                <button class="action-btn delete-btn" onclick="showDeleteConfirm(1)">删除</button>
+                <button class="action-btn bind-btn" onclick="bindEmployee(1)">绑定人员</button>
+                <button class="action-btn view-btn" onclick="viewBindedEmployee(1)">查看绑定人员</button>
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>外出培训规则</td>
+              <td>2023-03-15</td>
+              <td>2023-09-30</td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <button class="action-btn edit-btn" onclick="editRule(2, 'field')">编辑</button>
+                <button class="action-btn delete-btn" onclick="showDeleteConfirm(2)">删除</button>
+                <button class="action-btn bind-btn" onclick="bindEmployee(2)">绑定人员</button>
+                <button class="action-btn view-btn" onclick="viewBindedEmployee(2)">查看绑定人员</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 外勤规则分页区域 -->
+      <div class="pagination">
+        <div class="page-btns">
+          <button class="page-btn">&lt;&lt;</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">&gt;&gt;</button>
+        </div>
+        <div class="total">共10条记录</div>
+      </div>
+    </div>
+    
+    <!-- 中部列表区 - 加班规则 -->
+    <div class="tab-content" id="overtimeContent">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>序号</th>
+              <th>规则名称</th>
+              <th>开始时间</th>
+              <th>结束时间</th>
+              <th>规则状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>工作日加班规则</td>
+              <td>2023-01-01</td>
+              <td>2023-12-31</td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <button class="action-btn edit-btn" onclick="editRule(1, 'overtime')">编辑</button>
+                <button class="action-btn delete-btn" onclick="showDeleteConfirm(1)">删除</button>
+                <button class="action-btn bind-btn" onclick="bindEmployee(1)">绑定人员</button>
+                <button class="action-btn view-btn" onclick="viewBindedEmployee(1)">查看绑定人员</button>
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>节假日加班规则</td>
+              <td>2023-01-01</td>
+              <td>2023-12-31</td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <button class="action-btn edit-btn" onclick="editRule(2, 'overtime')">编辑</button>
+                <button class="action-btn delete-btn" onclick="showDeleteConfirm(2)">删除</button>
+                <button class="action-btn bind-btn" onclick="bindEmployee(2)">绑定人员</button>
+                <button class="action-btn view-btn" onclick="viewBindedEmployee(2)">查看绑定人员</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 加班规则分页区域 -->
+      <div class="pagination">
+        <div class="page-btns">
+          <button class="page-btn">&lt;&lt;</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">&gt;&gt;</button>
+        </div>
+        <div class="total">共10条记录</div>
+      </div>
+    </div>
+    
+    <!-- 中部列表区 - 旷工规则 -->
+    <div class="tab-content" id="absenceContent">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>序号</th>
+              <th>规则名称</th>
+              <th>开始时间</th>
+              <th>结束时间</th>
+              <th>规则状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>标准旷工规则</td>
+              <td>2023-01-01</td>
+              <td>2023-12-31</td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <button class="action-btn edit-btn" onclick="editRule(1, 'absence')">编辑</button>
+                <button class="action-btn delete-btn" onclick="showDeleteConfirm(1)">删除</button>
+                <button class="action-btn bind-btn" onclick="bindEmployee(1)">绑定人员</button>
+                <button class="action-btn view-btn" onclick="viewBindedEmployee(1)">查看绑定人员</button>
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>实习生旷工规则</td>
+              <td>2023-01-01</td>
+              <td>2023-12-31</td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <button class="action-btn edit-btn" onclick="editRule(2, 'absence')">编辑</button>
+                <button class="action-btn delete-btn" onclick="showDeleteConfirm(2)">删除</button>
+                <button class="action-btn bind-btn" onclick="bindEmployee(2)">绑定人员</button>
+                <button class="action-btn view-btn" onclick="viewBindedEmployee(2)">查看绑定人员</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 旷工规则分页区域 -->
+      <div class="pagination">
+        <div class="page-btns">
+          <button class="page-btn">&lt;&lt;</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">&gt;&gt;</button>
+        </div>
+        <div class="total">共10条记录</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 新增/编辑规则弹窗 -->
+  <div class="modal" id="ruleModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">新增规则</h3>
+        <button class="close-btn" onclick="closeModal('ruleModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="ruleForm">
+          <div class="form-group">
+            <label class="form-label">规则名称</label>
+            <input type="text" class="form-input" id="ruleName" placeholder="请输入规则名称">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">时间范围</label>
+            <div class="date-range">
+              <input type="date" class="form-input" id="startDate">
+              <span>-</span>
+              <input type="date" class="form-input" id="endDate">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">规则状态</label>
+            <div class="form-switch">
+              <label class="switch">
+                <input type="checkbox" id="ruleStatus">
+                <span class="slider"></span>
+              </label>
+              <label>启用</label>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">规则详细配置</label>
+            <div class="rule-config" id="ruleConfig">
+              <!-- 需打卡次数 -->
+              <div class="form-group">
+                <label class="form-label">需打卡次数</label>
+                <select class="form-input" id="checkInCount" onchange="updateTimePeriods()">
+                  <option value="1">1次</option>
+                  <option value="2" selected>2次</option>
+                  <option value="3">3次</option>
+                  <option value="4">4次</option>
+                  <option value="custom">自定义</option>
+                </select>
+              </div>
+              
+              <!-- 打卡时间段 -->
+              <div class="form-group">
+                <label class="form-label">打卡时间段</label>
+                <div class="time-periods" id="timePeriods">
+                  <!-- 时间段会根据选择的打卡次数动态生成 -->
+                </div>
+                <div class="add-time-btn" onclick="addTimePeriod()" id="addTimeBtn" style="display: none;">
+                  <i>+</i> 添加时间段
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="cancel-btn" onclick="closeModal('ruleModal')">取消</button>
+        <button class="save-btn" onclick="saveRule()">保存</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 删除确认弹窗 -->
+  <div class="modal confirm-modal" id="deleteConfirmModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">删除确认</h3>
+        <button class="close-btn" onclick="closeModal('deleteConfirmModal')">&times;</button>
+      </div>
+      <div class="confirm-body">
+        <div class="confirm-icon">!</div>
+        <p class="confirm-text">确定要删除该规则吗？删除后无法恢复。</p>
+      </div>
+      <div class="modal-footer">
+        <button class="cancel-btn" onclick="closeModal('deleteConfirmModal')">取消</button>
+        <button class="save-btn" style="background-color: #f56c6c;" onclick="deleteRule()">确认删除</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 绑定人员弹窗 -->
+  <div class="modal" id="bindEmployeeModal">
+    <div class="modal-content" style="width: 800px;">
+      <div class="modal-header">
+        <h3 class="modal-title">绑定人员</h3>
+        <button class="close-btn" onclick="closeModal('bindEmployeeModal')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 0;">
+        <div style="display: flex; height: 500px;">
+          <!-- 左侧部门树 -->
+          <div style="width: 300px; border-right: 1px solid #ebeef5; padding: 15px; overflow-y: auto;">
+            <div style="margin-bottom: 15px;">
+              <input type="text" placeholder="输入关键字进行过滤" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+            </div>
+            
+            <div style="font-size: 14px; color: #606266;">
+              <div style="padding: 8px 0; cursor: pointer; display: flex; align-items: center;">
+                <span style="margin-right: 5px;">▶</span>鄂州机场高速公路二期
+              </div>
+              <div style="padding: 8px 0 8px 20px; cursor: pointer;">领导</div>
+              <div style="padding: 8px 0 8px 20px; cursor: pointer;">计划合同部</div>
+              <div style="padding: 8px 0 8px 20px; cursor: pointer;">质量部</div>
+              <div style="padding: 8px 0 8px 20px; cursor: pointer;">安全部</div>
+              <div style="padding: 8px 0 8px 20px; cursor: pointer;">财务部</div>
+              <div style="padding: 8px 0 8px 20px; cursor: pointer;">技术部</div>
+              <div style="padding: 8px 0 8px 20px; cursor: pointer;">征迁协调部</div>
+              <div style="padding: 8px 0 8px 20px; cursor: pointer;">项目分部</div>
+              <div style="padding: 8px 0 8px 20px; cursor: pointer;">设计单位</div>
+              <div style="padding: 8px 0 8px 20px; cursor: pointer;">综合办公室</div>
+              <div style="padding: 8px 0 8px 20px; cursor: pointer;">监督管理</div>
+              <div style="padding: 8px 0 8px 20px; cursor: pointer;">中心试验室</div>
+            </div>
+          </div>
+          
+          <!-- 右侧用户列表 -->
+          <div style="flex: 1; padding: 15px; display: flex; flex-direction: column;">
+            <!-- Tab切换 -->
+            <div style="margin-bottom: 15px; border-bottom: 1px solid #e4e7ed;">
+              <div style="display: flex;">
+                <div id="allUsersTab" class="bind-tab active" onclick="switchBindTab('allUsers')" style="padding: 10px 15px; cursor: pointer; font-size: 14px; border-bottom: 2px solid #409eff; color: #409eff;">
+                  全部用户
+                </div>
+                <div id="bindedUsersTab" class="bind-tab" onclick="switchBindTab('bindedUsers')" style="padding: 10px 15px; cursor: pointer; font-size: 14px; color: #606266;">
+                  已绑定用户
+                </div>
+              </div>
+            </div>
+            
+            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; width: 100%;">
+                <!-- 添加搜索框 -->
+                <input type="text" placeholder="请输入用户姓名" style="flex: 1; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; margin-right: 10px;">
+                <button style="padding: 8px 15px; background-color: #409eff; color: #fff; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; margin-right: 10px;">查询</button>
+                <span style="font-size: 14px; color: #606266;">已选择 0 项 清空</span>
+              </div>
+            </div>
+            
+            <!-- 全部用户表格 -->
+            <div id="allUsersTable" class="user-table" style="flex: 1; overflow-y: auto; border: 1px solid #ebeef5; border-radius: 4px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead>
+                  <tr style="background-color: #f5f7fa;">
+                    <th style="padding: 12px 8px; text-align: left; font-weight: 500; color: #606266; border-bottom: 1px solid #ebeef5;">
+                      <input type="checkbox"> 
+                    </th>
+                    <th style="padding: 12px 8px; text-align: left; font-weight: 500; color: #606266; border-bottom: 1px solid #ebeef5;">用户名称</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;"><input type="checkbox"></td>
+                    <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;">张三</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;"><input type="checkbox"></td>
+                    <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;">李四</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;"><input type="checkbox"></td>
+                    <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;">王五</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- 已绑定用户表格 -->
+            <div id="bindedUsersTable" class="user-table" style="display: none; flex: 1; overflow-y: auto; border: 1px solid #ebeef5; border-radius: 4px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead>
+                  <tr style="background-color: #f5f7fa;">
+                    <th style="padding: 12px 8px; text-align: left; font-weight: 500; color: #606266; border-bottom: 1px solid #ebeef5;">
+                      <input type="checkbox"> 
+                    </th>
+                    <th style="padding: 12px 8px; text-align: left; font-weight: 500; color: #606266; border-bottom: 1px solid #ebeef5;">用户名称</th>
+                    <th style="padding: 12px 8px; text-align: center; font-weight: 500; color: #606266; border-bottom: 1px solid #ebeef5;">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;"><input type="checkbox"></td>
+                    <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;">赵六</td>
+                    <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; text-align: center;">
+                      <button class="action-btn delete-btn" onclick="removeBindedUser(this)">移除</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;"><input type="checkbox"></td>
+                    <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5;">钱七</td>
+                    <td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; text-align: center;">
+                      <button class="action-btn delete-btn" onclick="removeBindedUser(this)">移除</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- 分页 -->
+            <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #606266;">
+              <div>
+                共 0 条
+                <select style="padding: 5px; border: 1px solid #dcdfe6; border-radius: 4px; margin-left: 5px;">
+                  <option value="10">10条/页</option>
+                  <option value="20">20条/页</option>
+                  <option value="30">30条/页</option>
+                  <option value="50">50条/页</option>
+                </select>
+              </div>
+              <div style="display: flex; align-items: center;">
+                <div style="display: flex;">
+                  <button style="margin: 0 5px; padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; cursor: pointer; background-color: #fff; min-width: 30px; text-align: center;">&lt;</button>
+                  <button style="margin: 0 5px; padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; cursor: pointer; background-color: #409eff; color: #fff; border-color: #409eff; min-width: 30px; text-align: center;">1</button>
+                  <button style="margin: 0 5px; padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; cursor: pointer; background-color: #fff; min-width: 30px; text-align: center;">&gt;</button>
+                </div>
+                <div style="display: flex; align-items: center; margin-left: 15px;">
+                  前往
+                  <input type="text" value="1" style="width: 50px; padding: 5px; border: 1px solid #dcdfe6; border-radius: 4px; margin: 0 5px; text-align: center;">
+                  页
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid #ebeef5;">
+        <button class="cancel-btn" onclick="closeModal('bindEmployeeModal')">取消</button>
+        <button class="save-btn" onclick="saveBindEmployee()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 查看绑定人员弹窗 -->
+  <div class="modal" id="viewBindedEmployeeModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">查看绑定人员</h3>
+        <button class="close-btn" onclick="closeModal('viewBindedEmployeeModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">已绑定员工</label>
+          <div style="border: 1px solid #dcdfe6; border-radius: 4px; padding: 10px; height: 300px; overflow-y: auto;">
+            <div style="margin-bottom: 10px;">
+              <span>张三</span>
+            </div>
+            <div style="margin-bottom: 10px;">
+              <span>李四</span>
+            </div>
+            <div style="margin-bottom: 10px;">
+              <span>王五</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="cancel-btn" onclick="closeModal('viewBindedEmployeeModal')">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 当前选中的规则类型
+    let currentRuleType = 'attendance';
+    let currentRuleId = null;
+    
+    // Tab切换
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        
+        currentRuleType = this.getAttribute('data-type');
+        
+        // 隐藏所有内容区域
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.remove('active');
+        });
+        
+        // 显示对应的内容区域
+        document.getElementById(currentRuleType + 'Content').classList.add('active');
+      });
+    });
+    
+    // 打开新增规则弹窗
+    document.getElementById('addRuleBtn').addEventListener('click', function() {
+      document.getElementById('modalTitle').textContent = '新增规则';
+      document.getElementById('ruleName').value = '';
+      document.getElementById('startDate').value = '';
+      document.getElementById('endDate').value = '';
+      document.getElementById('ruleStatus').checked = true;
+      document.getElementById('checkInCount').value = '2';
+      document.getElementById('timePeriods').innerHTML = '';
+      document.getElementById('ruleConfig').style.display = 'block';
+      
+      // 显示当前选中类型的规则配置
+      showRuleConfig(currentRuleType);
+      
+      // 打开弹窗
+      openModal('ruleModal');
+    });
+    
+    // 添加打卡时间段
+    function addTimePeriod() {
+      const timePeriods = document.getElementById('timePeriods');
+      const newTimePeriod = document.createElement('div');
+      newTimePeriod.className = 'time-period';
+      newTimePeriod.innerHTML = `
+        <input type="text" class="form-input" value="" placeholder="打卡名称" style="width: 120px; margin-right: 10px;">
+        <input type="time" class="form-input" value="08:30">
+        <span>-</span>
+        <input type="time" class="form-input" value="09:30">
+        <button type="button" class="remove-btn" onclick="removeTimePeriod(this)">&times;</button>
+      `;
+      timePeriods.appendChild(newTimePeriod);
+    }
+    
+    // 删除打卡时间段
+    function removeTimePeriod(button) {
+      const timePeriod = button.parentElement;
+      timePeriod.remove();
+    }
+    
+    // 保存规则
+    function saveRule() {
+      // 实现保存规则的逻辑
+    }
+    
+    // 删除规则
+    function deleteRule() {
+      // 实现删除规则的逻辑
+    }
+    
+    // 保存绑定人员
+    function saveBindEmployee() {
+      // 实现保存绑定人员的逻辑
+    }
+
+    // 打开弹窗函数
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('show');
+    }
+
+    // 关闭弹窗函数
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('show');
+    }
+
+    // 编辑规则函数
+    function editRule(id, type) {
+      document.getElementById('modalTitle').textContent = '编辑规则';
+      currentRuleId = id;
+      currentRuleType = type;
+      
+      // 这里可以根据id获取规则数据并填充表单
+      // 模拟数据
+      document.getElementById('ruleName').value = '规则 ' + id;
+      document.getElementById('startDate').value = '2023-01-01';
+      document.getElementById('endDate').value = '2023-12-31';
+      document.getElementById('ruleStatus').checked = true;
+      
+      // 显示对应类型的规则配置
+      showRuleConfig(type);
+      
+      // 打开编辑弹窗
+      openModal('ruleModal');
+    }
+
+    // 显示删除确认弹窗
+    function showDeleteConfirm(id) {
+      currentRuleId = id;
+      openModal('deleteConfirmModal');
+    }
+
+    // 绑定人员
+    function bindEmployee(id) {
+      currentRuleId = id;
+      openModal('bindEmployeeModal');
+    }
+
+    // 查看绑定人员
+    function viewBindedEmployee(id) {
+      currentRuleId = id;
+      // 这里可以根据id获取绑定的人员数据
+      // ...
+      
+      // 打开查看绑定人员弹窗
+      openModal('viewBindedEmployeeModal');
+    }
+
+    // 修改showRuleConfig函数
+    function showRuleConfig(type) {
+      // 清空之前的配置
+      const ruleConfig = document.getElementById('ruleConfig');
+      
+      if (type === 'absence') {
+        // 旷工规则配置
+        ruleConfig.innerHTML = `
+          <div class="form-group">
+            <label class="form-label">旷工规则</label>
+            <div style="margin-top: 10px;">
+              <div style="margin-bottom: 10px;">
+                <input type="checkbox" id="absence_rule1" checked>
+                <label for="absence_rule1">未出勤</label>
+              </div>
+              <div style="margin-bottom: 10px;">
+                <input type="checkbox" id="absence_rule2">
+                <label for="absence_rule2">未外出</label>
+              </div>
+              <div style="margin-bottom: 10px;">
+                <input type="checkbox" id="absence_rule3">
+                <label for="absence_rule3">未请假</label>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'attendance') {
+        // 出勤规则配置
+        ruleConfig.innerHTML = `
+          <!-- 需打卡次数 -->
+          <div class="form-group">
+            <label class="form-label">需打卡次数</label>
+            <select class="form-input" id="checkInCount" onchange="updateTimePeriods()">
+              <option value="1">1次</option>
+              <option value="2" selected>2次</option>
+              <option value="3">3次</option>
+              <option value="4">4次</option>
+              <option value="custom">自定义</option>
+            </select>
+          </div>
+          
+          <!-- 打卡时间段 -->
+          <div class="form-group">
+            <label class="form-label">打卡时间段</label>
+            <div class="time-periods" id="timePeriods">
+              <!-- 时间段会根据选择的打卡次数动态生成 -->
+            </div>
+            <div class="add-time-btn" onclick="addTimePeriod()" id="addTimeBtn" style="display: none;">
+              <i>+</i> 添加时间段
+            </div>
+          </div>
+        `;
+        
+        // 初始化打卡时间段
+        setTimeout(() => {
+          updateTimePeriods();
+        }, 0);
+      } else if (type === 'field') {
+        // 外勤规则配置
+        ruleConfig.innerHTML = `
+          <div class="form-group">
+            <label class="form-label">外勤打卡范围(米)</label>
+            <input type="number" class="form-input" value="500">
+          </div>
+          <div class="form-group">
+            <label class="form-label">是否需要拍照</label>
+            <div class="form-switch">
+              <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </label>
+              <label>是</label>
+            </div>
+          </div>
+        `;
+      } else if (type === 'overtime') {
+        // 加班规则配置
+        ruleConfig.innerHTML = `
+          <div class="form-group">
+            <label class="form-label">最小加班时长(小时)</label>
+            <input type="number" class="form-input" value="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">加班倍率</label>
+            <input type="number" class="form-input" value="1.5" step="0.5">
+          </div>
+        `;
+      }
+    }
+
+    // 修改updateTimePeriods函数
+    function updateTimePeriods() {
+      const checkInCount = document.getElementById('checkInCount').value;
+      const timePeriods = document.getElementById('timePeriods');
+      const addTimeBtn = document.getElementById('addTimeBtn');
+      
+      // 清空现有时间段
+      timePeriods.innerHTML = '';
+      
+      // 如果是自定义，显示添加按钮
+      if (checkInCount === 'custom') {
+        addTimeBtn.style.display = 'inline-flex';
+        return;
+      } else {
+        addTimeBtn.style.display = 'none';
+      }
+      
+      // 根据打卡次数添加对应数量的时间段
+      const count = parseInt(checkInCount);
+      
+      if (count >= 1) {
+        // 早上打卡
+        const morningPeriod = document.createElement('div');
+        morningPeriod.className = 'time-period';
+        morningPeriod.innerHTML = `
+          <input type="text" class="form-input" value="上班打卡" placeholder="打卡名称" style="width: 120px; margin-right: 10px;">
+          <input type="time" class="form-input" value="08:30">
+          <span>-</span>
+          <input type="time" class="form-input" value="09:30">
+          <button type="button" class="remove-btn" onclick="removeTimePeriod(this)" style="visibility: hidden;">&times;</button>
+        `;
+        timePeriods.appendChild(morningPeriod);
+      }
+      
+      if (count >= 2) {
+        // 下午打卡
+        const eveningPeriod = document.createElement('div');
+        eveningPeriod.className = 'time-period';
+        eveningPeriod.innerHTML = `
+          <input type="text" class="form-input" value="下班打卡" placeholder="打卡名称" style="width: 120px; margin-right: 10px;">
+          <input type="time" class="form-input" value="17:30">
+          <span>-</span>
+          <input type="time" class="form-input" value="18:30">
+          <button type="button" class="remove-btn" onclick="removeTimePeriod(this)" style="visibility: hidden;">&times;</button>
+        `;
+        timePeriods.appendChild(eveningPeriod);
+      }
+      
+      if (count >= 3) {
+        // 中午打卡
+        const noonPeriod = document.createElement('div');
+        noonPeriod.className = 'time-period';
+        noonPeriod.innerHTML = `
+          <input type="text" class="form-input" value="午休打卡" placeholder="打卡名称" style="width: 120px; margin-right: 10px;">
+          <input type="time" class="form-input" value="12:00">
+          <span>-</span>
+          <input type="time" class="form-input" value="13:00">
+          <button type="button" class="remove-btn" onclick="removeTimePeriod(this)" style="visibility: hidden;">&times;</button>
+        `;
+        timePeriods.appendChild(noonPeriod);
+      }
+      
+      if (count >= 4) {
+        // 晚上打卡
+        const nightPeriod = document.createElement('div');
+        nightPeriod.className = 'time-period';
+        nightPeriod.innerHTML = `
+          <input type="text" class="form-input" value="加班打卡" placeholder="打卡名称" style="width: 120px; margin-right: 10px;">
+          <input type="time" class="form-input" value="21:00">
+          <span>-</span>
+          <input type="time" class="form-input" value="22:00">
+          <button type="button" class="remove-btn" onclick="removeTimePeriod(this)" style="visibility: hidden;">&times;</button>
+        `;
+        timePeriods.appendChild(nightPeriod);
+      }
+    }
+
+    // 切换绑定用户Tab
+    function switchBindTab(tabName) {
+      // 重置所有tab和表格
+      document.querySelectorAll('.bind-tab').forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.borderBottom = 'none';
+        tab.style.color = '#606266';
+      });
+      
+      document.querySelectorAll('.user-table').forEach(table => {
+        table.style.display = 'none';
+      });
+      
+      // 激活选中的tab
+      if (tabName === 'allUsers') {
+        document.getElementById('allUsersTab').classList.add('active');
+        document.getElementById('allUsersTab').style.borderBottom = '2px solid #409eff';
+        document.getElementById('allUsersTab').style.color = '#409eff';
+        document.getElementById('allUsersTable').style.display = 'block';
+      } else {
+        document.getElementById('bindedUsersTab').classList.add('active');
+        document.getElementById('bindedUsersTab').style.borderBottom = '2px solid #409eff';
+        document.getElementById('bindedUsersTab').style.color = '#409eff';
+        document.getElementById('bindedUsersTable').style.display = 'block';
+      }
+    }
+
+    // 移除已绑定用户
+    function removeBindedUser(btn) {
+      if (confirm('确定要移除该用户吗？')) {
+        btn.closest('tr').remove();
+      }
+    }
+  </script>
+</body>
+</html>
